@@ -1,6 +1,6 @@
-from django.http import HttpResponse, JsonResponse
+from django.http import  JsonResponse
 from rest_framework.decorators import api_view
-from .models import users,follow,blogs
+from .models import users,follow,blogs,private_blogs,groups
 
 import bcrypt
 
@@ -102,14 +102,24 @@ def add_blogs(request):
         user = users.objects.get(id=id)
         blog.writtenby=user
         if request.POST['public'].lower()=='false':
+            #Note: This part need an group_id field in the request
             blog.public=False
+            blog.save()
+            # print(request.POST['group_id'])
+            if(request.data.get('group_id')!=None):
+                group_id = groups.objects.get(id=request.POST['group_id'])
+                print(group_id)
+                private_blog = private_blogs()
+                private_blog.blogid = blog
+                private_blog.groupid = group_id
+                private_blog.save()
+            else:
+                return JsonResponse({"status":False,"error":"Blog is private but group id is not provided."})
         else:
             blog.public=True
-        # blog.public=request.POST['public']
-        # blog.public=True
-        blog.save()
-        if blog.public==True:
-            
+            blog.save()
+
+        # if blog.public==True:
         return JsonResponse({"status":True})
     else:
         return JsonResponse({"status": False})
@@ -150,9 +160,7 @@ def get_blogs(user):
         temp['author']=author
         temp['status']=x.status
         blogs_return.append(temp)
-    # print(blogs_return)
     return blogs_return
-    # return blog
 
 def authenticate(request):
     request_token=request.headers.get('token')
