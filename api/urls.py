@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.urls import path,include
 
-from .views import register,signin,users_info,add_blogs,create_groups,get_groups
+from .views import register,signin,users_info,add_blogs,create_groups,get_groups,add_following
 
 urlpatterns =[
     path('register/',register,name="user-register"),
@@ -10,5 +10,6 @@ urlpatterns =[
     path('add_blogs/',add_blogs,name="add-blogs"),
     path('create_groups/',create_groups,name="new-group"),
     path('get_groups/', get_groups, name="get-groups"),
+    path('add_following/', add_following, name="get-groups"),
 
 ]

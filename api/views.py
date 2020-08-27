@@ -89,9 +89,27 @@ def signin(request):
     else:
         return JsonResponse("This route accepts only post request")
 
+@api_view(['POST'])
+def add_following(request):
+    if(authenticate(request)):
+        follower_id=request.data.get('follower_id')
+        following_id=request.data.get("following_id")
+        if follower_id==None or follower_id==None:
+            return JsonResponse({"status":True,'error':"required fieds are not provided"})
+        else:
+            temp=follow.objects.filter(follower_id=follower_id,following_id=following_id)
+            if len(temp)!=0:
+                return JsonResponse({"status":True,"error":"Alredy following"})
+            follower=users.objects.get(id=follower_id)
+            following=users.objects.get(id=following_id)
+            follow_obj=follow()
+            follow_obj.follower=follower
+            follow_obj.following=following
+            follow_obj.save()
+            return JsonResponse({"status":True,'error':"Follower added"})
 
-
-
+    else:
+        return JsonResponse({"status":False,'error':"User is not authorized"})
 
 @api_view(['POST'])
 def create_groups(request):
