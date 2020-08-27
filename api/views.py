@@ -1,6 +1,6 @@
 from django.http import  JsonResponse
 from rest_framework.decorators import api_view
-from .models import users,follow,blogs,private_blogs,groups
+from .models import users,follow,blogs,private_blogs,groups,group_members
 
 import bcrypt
 
@@ -90,6 +90,30 @@ def signin(request):
         return JsonResponse("This route accepts only post request")
 
 
+
+
+
+@api_view(['POST'])
+def create_groups(request):
+    if(authenticate(request)):
+        user=users.objects.get(id=request.data.get('id'))
+        group_name=request.data.get('group_name')
+        group=groups.objects.filter(name=group_name)
+        if len(group)!=0:
+            return JsonResponse({"status":False,"error":"Group name must be unique"})
+        else:
+            group=groups()
+            group.name=group_name
+            group.save()
+            member=group_members()
+            member.group=group
+            member.user=user
+            member.save()
+            return JsonResponse({"status":True,"error":"Group created"})
+    else:
+        return JsonResponse({"status":False,"error":"User not authenticated"})
+
+
 @api_view(['POST'])
 def add_blogs(request):
     if authenticate(request):
@@ -123,6 +147,23 @@ def add_blogs(request):
         return JsonResponse({"status":True})
     else:
         return JsonResponse({"status": False})
+
+@api_view(['POST'])
+def get_groups(request):
+    if(authenticate(request)):
+        all_groups=groups.objects.all()
+        all_groups=[x for x in all_groups]
+        groups_send=[]
+        for x in all_groups:
+            temp={}
+            temp['name']= x.name
+            temp['id']=x.id
+            groups_send.append(temp)
+        # print(all_groups)
+        return JsonResponse({"status":"ok","groups":groups_send})
+    else:
+        return JsonResponse({"status":False,"error":"User not authenticated"})
+
 
 
 
